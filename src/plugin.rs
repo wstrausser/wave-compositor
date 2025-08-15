@@ -6,7 +6,7 @@ use nih_plug_iced::IcedState;
 use crate::editor;
 
 
-struct WaveCompositor {
+pub struct WaveCompositor {
     params: Arc<WaveCompositorParams>,
 }
 
@@ -59,6 +59,15 @@ enum Waveform {
 }
 
 
+impl Default for WaveCompositor {
+    fn default() -> Self {
+        Self {
+            params: Arc::new(WaveCompositorParams::default()),
+        }
+    }
+}
+
+
 impl Default for WaveCompositorParams {
     fn default() -> Self {
         Self {
@@ -101,4 +110,53 @@ impl Default for WaveParams {
             ),
         }
     }
+}
+
+
+impl Plugin for WaveCompositor {
+    const NAME: &'static str = "Wave Compositor";
+    
+    const VENDOR: &'static str = "William Strausser";
+    
+    const URL: &'static str = "https://github.com/wstrausser/sine-compositor/";
+    
+    const EMAIL: &'static str = "william.e.strausser@gmail.com";
+    
+    const VERSION: &'static str = "0.1.0";
+    
+    const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[
+        AudioIOLayout {
+            main_input_channels: None,
+            main_output_channels: NonZeroU32::new(2),
+            ..AudioIOLayout::const_default()
+        },
+        AudioIOLayout {
+            main_input_channels: None,
+            main_output_channels: NonZeroU32::new(2),
+            ..AudioIOLayout::const_default()
+        },
+    ];
+    
+    type SysExMessage = ();
+    
+    type BackgroundTask = ();
+    
+    fn params(&self) -> Arc<dyn Params> {
+        self.params.clone()
+    }
+    
+    fn process(
+        &mut self,
+        buffer: &mut Buffer,
+        aux: &mut AuxiliaryBuffers,
+        context: &mut impl ProcessContext<Self>,
+    ) -> ProcessStatus {
+        ProcessStatus::Normal
+    }
+}
+
+impl Vst3Plugin for WaveCompositor {
+    const VST3_CLASS_ID: [u8; 16] = *b"WaveCompositor  ";
+    
+    const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[Vst3SubCategory::Synth];
 }

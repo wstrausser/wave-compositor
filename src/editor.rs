@@ -6,5 +6,5 @@ use crate::plugin::WaveCompositorParams;
 
 
 pub fn default_state() -> Arc<IcedState> {
-    todo!()
+    IcedState::from_size(800, 600)
 }
