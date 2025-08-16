@@ -77,7 +77,7 @@ impl Default for WaveCompositorParams {
                 "Base Frequency",
                 440.0,
                 FloatRange::Linear { min: 260.0, max: 520.0 },
-            ),
+            ).with_unit(" hz"),
             wave_1: WaveParams::default(),
             wave_2: WaveParams::default(),
             wave_3: WaveParams::default(),
@@ -143,6 +143,13 @@ impl Plugin for WaveCompositor {
     
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()
+    }
+
+    fn editor(&mut self, async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
+        editor::create(
+            self.params.clone(),
+            self.params.editor_state.clone(),
+        )
     }
     
     fn process(
