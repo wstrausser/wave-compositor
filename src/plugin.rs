@@ -4,10 +4,14 @@ use nih_plug::prelude::*;
 use nih_plug_iced::IcedState;
 
 use crate::editor;
+use crate::wave::Wave;
 
 
 pub struct WaveCompositor {
     params: Arc<WaveCompositorParams>,
+    wave_1: Wave,
+    wave_2: Wave,
+    wave_3: Wave,
 }
 
 #[derive(Params)]
@@ -44,7 +48,7 @@ struct WaveParams {
 }
 
 #[derive(Enum, Debug, PartialEq)]
-enum Waveform {
+pub enum Waveform {
     #[id = "sine"]
     Sine,
 
@@ -63,6 +67,9 @@ impl Default for WaveCompositor {
     fn default() -> Self {
         Self {
             params: Arc::new(WaveCompositorParams::default()),
+            wave_1: Wave::new(Waveform::Sine),
+            wave_2: Wave::new(Waveform::Sine),
+            wave_3: Wave::new(Waveform::Sine),
         }
     }
 }
@@ -114,7 +121,7 @@ impl Default for WaveParams {
 
 
 impl Plugin for WaveCompositor {
-    const NAME: &'static str = "Wave Compositor";
+    const NAME: &'static str = "Wave Compositor (v0.1.0)";
     
     const VENDOR: &'static str = "William Strausser";
     
@@ -158,6 +165,24 @@ impl Plugin for WaveCompositor {
         aux: &mut AuxiliaryBuffers,
         context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
+        for (_, channel_samples) in buffer.iter_samples().enumerate() {
+            for sample in channel_samples {
+                let wave_1_sample = self.wave_1.sample(
+                    (self.params.base_frequency.value() * self.params.wave_1.multiplier.value()) + self.params.wave_1.offset.value(),
+                    self.params.wave_1.gain.value(),
+                );
+                let wave_2_sample = self.wave_2.sample(
+                    (self.params.base_frequency.value() * self.params.wave_2.multiplier.value()) + self.params.wave_2.offset.value(),
+                    self.params.wave_2.gain.value(),
+                );
+                let wave_3_sample = self.wave_3.sample(
+                    (self.params.base_frequency.value() * self.params.wave_3.multiplier.value()) + self.params.wave_3.offset.value(),
+                    self.params.wave_3.gain.value(),
+                );
+
+                *sample = wave_1_sample + wave_2_sample + wave_3_sample;
+            }
+        }
         ProcessStatus::Normal
     }
 }
@@ -167,3 +192,6 @@ impl Vst3Plugin for WaveCompositor {
     
     const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[Vst3SubCategory::Synth];
 }
+
+
+
