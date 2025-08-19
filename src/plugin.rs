@@ -184,18 +184,18 @@ impl Plugin for WaveCompositor {
         for (_, channel_samples) in buffer.iter_samples().enumerate() {
             for sample in channel_samples {
                 let wave_1_sample = self.wave_1.sample(
-                    (self.params.base_frequency.value() * self.params.wave_1.multiplier.value()) * (1.0 + self.params.wave_1.offset.value()),
-                    self.params.wave_1.gain.value(),
+                    (self.params.base_frequency.smoothed.next() * self.params.wave_1.multiplier.smoothed.next()) * (1.0 + self.params.wave_1.offset.smoothed.next()),
+                    self.params.wave_1.gain.smoothed.next(),
                     self.sample_rate,
                 );
                 let wave_2_sample = self.wave_2.sample(
-                    (self.params.base_frequency.value() * self.params.wave_2.multiplier.value()) * (1.0 + self.params.wave_2.offset.value()),
-                    self.params.wave_2.gain.value(),
+                    (self.params.base_frequency.smoothed.next() * self.params.wave_2.multiplier.smoothed.next()) * (1.0 + self.params.wave_2.offset.smoothed.next()),
+                    self.params.wave_2.gain.smoothed.next(),
                     self.sample_rate,
                 );
                 let wave_3_sample = self.wave_3.sample(
-                    (self.params.base_frequency.value() * self.params.wave_3.multiplier.value()) * (1.0 + self.params.wave_3.offset.value()),
-                    self.params.wave_3.gain.value(),
+                    (self.params.base_frequency.smoothed.next() * self.params.wave_3.multiplier.smoothed.next()) * (1.0 + self.params.wave_3.offset.smoothed.next()),
+                    self.params.wave_3.gain.smoothed.next(),
                     self.sample_rate,
                 );
 
