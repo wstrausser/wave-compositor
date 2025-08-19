@@ -121,7 +121,7 @@ impl Default for WaveParams {
 
 
 impl Plugin for WaveCompositor {
-    const NAME: &'static str = "Wave Compositor (v0.1.0)";
+    const NAME: &'static str = "Wave Compositor (v0.1.1)";
     
     const VENDOR: &'static str = "William Strausser";
     
@@ -129,7 +129,7 @@ impl Plugin for WaveCompositor {
     
     const EMAIL: &'static str = "william.e.strausser@gmail.com";
     
-    const VERSION: &'static str = "0.1.0";
+    const VERSION: &'static str = "0.1.1";
     
     const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[
         AudioIOLayout {
