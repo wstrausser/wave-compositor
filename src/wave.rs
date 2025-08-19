@@ -12,7 +12,7 @@ impl Wave {
     pub fn new(waveform: Waveform) -> Self {
         Wave {
             waveform: waveform,
-            sample_rate: 1.0,
+            sample_rate: 44100.0,
             phase: 0.0,
         }
     }
