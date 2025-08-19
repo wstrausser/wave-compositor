@@ -9,6 +9,7 @@ use crate::wave::Wave;
 
 pub struct WaveCompositor {
     params: Arc<WaveCompositorParams>,
+    sample_rate: f32,
     wave_1: Wave,
     wave_2: Wave,
     wave_3: Wave,
@@ -67,6 +68,7 @@ impl Default for WaveCompositor {
     fn default() -> Self {
         Self {
             params: Arc::new(WaveCompositorParams::default()),
+            sample_rate: 1.0,
             wave_1: Wave::new(Waveform::Sine),
             wave_2: Wave::new(Waveform::Sine),
             wave_3: Wave::new(Waveform::Sine),
@@ -158,6 +160,12 @@ impl Plugin for WaveCompositor {
             self.params.editor_state.clone(),
         )
     }
+
+    fn initialize(&mut self, audio_io_layout: &AudioIOLayout, buffer_config: &BufferConfig, context: &mut impl InitContext<Self>) -> bool {
+        self.sample_rate = buffer_config.sample_rate;
+
+        true
+    }
     
     fn process(
         &mut self,
@@ -178,14 +186,17 @@ impl Plugin for WaveCompositor {
                 let wave_1_sample = self.wave_1.sample(
                     (self.params.base_frequency.value() * self.params.wave_1.multiplier.value()) * (1.0 + self.params.wave_1.offset.value()),
                     self.params.wave_1.gain.value(),
+                    self.sample_rate,
                 );
                 let wave_2_sample = self.wave_2.sample(
                     (self.params.base_frequency.value() * self.params.wave_2.multiplier.value()) * (1.0 + self.params.wave_2.offset.value()),
                     self.params.wave_2.gain.value(),
+                    self.sample_rate,
                 );
                 let wave_3_sample = self.wave_3.sample(
                     (self.params.base_frequency.value() * self.params.wave_3.multiplier.value()) * (1.0 + self.params.wave_3.offset.value()),
                     self.params.wave_3.gain.value(),
+                    self.sample_rate,
                 );
 
                 *sample = wave_1_sample + wave_2_sample + wave_3_sample;
@@ -200,6 +211,3 @@ impl Vst3Plugin for WaveCompositor {
     
     const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[Vst3SubCategory::Synth];
 }
-
-
-
