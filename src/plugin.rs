@@ -47,7 +47,7 @@ struct WaveParams {
     offset: FloatParam,
 }
 
-#[derive(Enum, Debug, PartialEq)]
+#[derive(Clone, Debug, Enum, PartialEq)]
 pub enum Waveform {
     #[id = "sine"]
     Sine,
@@ -165,6 +165,14 @@ impl Plugin for WaveCompositor {
         aux: &mut AuxiliaryBuffers,
         context: &mut impl ProcessContext<Self>,
     ) -> ProcessStatus {
+        let selected_waveform = self.params.waveform.value();
+
+        if self.wave_1.waveform != selected_waveform {
+            self.wave_1 = Wave::new(selected_waveform.clone());
+            self.wave_2 = Wave::new(selected_waveform.clone());
+            self.wave_3 = Wave::new(selected_waveform.clone());
+        }
+
         for (_, channel_samples) in buffer.iter_samples().enumerate() {
             for sample in channel_samples {
                 let wave_1_sample = self.wave_1.sample(

@@ -3,7 +3,7 @@ use std::f32::consts;
 use crate::plugin::Waveform;
 
 pub struct Wave {
-    waveform: Waveform,
+    pub waveform: Waveform,
     sample_rate: f32,
     phase: f32,
 }
@@ -51,14 +51,47 @@ impl Wave {
     }
 
     fn sample_saw(&mut self, frequency: f32) -> f32 {
-        todo!()
+        let phase_delta = frequency / self.sample_rate;
+
+        self.phase += phase_delta;
+
+        if self.phase >= 1.0 {
+            self.phase -= 2.0;
+        }
+
+        self.phase
     }
 
     fn sample_square(&mut self, frequency: f32) -> f32 {
-        todo!()
+        let phase_delta = frequency / self.sample_rate;
+        
+        self.phase += phase_delta;
+
+        if self.phase >= 1.0 {
+            self.phase -= 2.0
+        }
+
+        return if self.phase >= 0.0 {
+            1.0
+        } else {
+            -1.0
+        }
     }
 
     fn sample_triangle(&mut self, frequency: f32) -> f32 {
-        todo!()
+        let phase_delta = frequency / self.sample_rate;
+
+        self.phase += phase_delta;
+
+        if self.phase >= 1.0 {
+            self.phase -= 2.0
+        }
+
+        return if self.phase >= 0.0 {
+            1.0 - (self.phase * 2.0)
+        } else {
+            -1.0 + ((1.0 - self.phase.abs()) * 2.0)
+        }
+
     }
 }
