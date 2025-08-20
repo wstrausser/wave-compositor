@@ -423,6 +423,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "float-cmp"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b09cf3155332e944990140d967ff5eceb70df778b34f77d8075db46e4704e6d8"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "foreign-types"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1785,6 +1794,7 @@ dependencies = [
 name = "wave_compositor"
 version = "0.1.1"
 dependencies = [
+ "float-cmp",
  "nih_plug",
  "nih_plug_iced",
 ]

@@ -14,3 +14,6 @@ nih_plug_iced = { git = "https://github.com/robbert-vdh/nih-plug.git", package =
 
 [workspace]
 members = ["xtask"]
+
+[dev-dependencies]
+float-cmp = "0.10.0"
