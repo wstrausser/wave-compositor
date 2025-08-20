@@ -6,7 +6,6 @@ use nih_plug_iced::IcedState;
 use crate::editor;
 use crate::wave::Wave;
 
-
 pub struct WaveCompositor {
     params: Arc<WaveCompositorParams>,
     sample_rate: f32,
@@ -63,7 +62,6 @@ pub enum Waveform {
     Triangle,
 }
 
-
 impl Default for WaveCompositor {
     fn default() -> Self {
         Self {
@@ -76,7 +74,6 @@ impl Default for WaveCompositor {
     }
 }
 
-
 impl Default for WaveCompositorParams {
     fn default() -> Self {
         Self {
@@ -85,8 +82,12 @@ impl Default for WaveCompositorParams {
             base_frequency: FloatParam::new(
                 "Base Frequency",
                 440.0,
-                FloatRange::Linear { min: 260.0, max: 520.0 },
-            ).with_unit(" hz"),
+                FloatRange::Linear {
+                    min: 260.0,
+                    max: 520.0,
+                },
+            )
+            .with_unit(" hz"),
             wave_1: WaveParams::default(),
             wave_2: WaveParams::default(),
             wave_3: WaveParams::default(),
@@ -94,14 +95,17 @@ impl Default for WaveCompositorParams {
     }
 }
 
-
 impl Default for WaveParams {
     fn default() -> Self {
         Self {
             multiplier: FloatParam::new(
                 "Multiplier",
                 1.0,
-                FloatRange::Skewed { min: 0.1, max: 10.0, factor: 0.25 },
+                FloatRange::Skewed {
+                    min: 0.1,
+                    max: 10.0,
+                    factor: 0.25,
+                },
             ),
             gain: FloatParam::new(
                 "Gain",
@@ -115,24 +119,26 @@ impl Default for WaveParams {
             offset: FloatParam::new(
                 "Offset",
                 0.0,
-                FloatRange::Linear { min: -0.1, max: 0.1 },
+                FloatRange::Linear {
+                    min: -0.1,
+                    max: 0.1,
+                },
             ),
         }
     }
 }
 
-
 impl Plugin for WaveCompositor {
     const NAME: &'static str = "Wave Compositor (v0.1.1)";
-    
+
     const VENDOR: &'static str = "William Strausser";
-    
+
     const URL: &'static str = "https://github.com/wstrausser/sine-compositor/";
-    
+
     const EMAIL: &'static str = "william.e.strausser@gmail.com";
-    
+
     const VERSION: &'static str = "0.1.1";
-    
+
     const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[
         AudioIOLayout {
             main_input_channels: None,
@@ -145,28 +151,30 @@ impl Plugin for WaveCompositor {
             ..AudioIOLayout::const_default()
         },
     ];
-    
+
     type SysExMessage = ();
-    
+
     type BackgroundTask = ();
-    
+
     fn params(&self) -> Arc<dyn Params> {
         self.params.clone()
     }
 
     fn editor(&mut self, async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
-        editor::create(
-            self.params.clone(),
-            self.params.editor_state.clone(),
-        )
+        editor::create(self.params.clone(), self.params.editor_state.clone())
     }
 
-    fn initialize(&mut self, audio_io_layout: &AudioIOLayout, buffer_config: &BufferConfig, context: &mut impl InitContext<Self>) -> bool {
+    fn initialize(
+        &mut self,
+        audio_io_layout: &AudioIOLayout,
+        buffer_config: &BufferConfig,
+        context: &mut impl InitContext<Self>,
+    ) -> bool {
         self.sample_rate = buffer_config.sample_rate;
 
         true
     }
-    
+
     fn process(
         &mut self,
         buffer: &mut Buffer,
@@ -184,17 +192,23 @@ impl Plugin for WaveCompositor {
         for (_, channel_samples) in buffer.iter_samples().enumerate() {
             for sample in channel_samples {
                 let wave_1_sample = self.wave_1.sample(
-                    (self.params.base_frequency.smoothed.next() * self.params.wave_1.multiplier.smoothed.next()) * (1.0 + self.params.wave_1.offset.smoothed.next()),
+                    (self.params.base_frequency.smoothed.next()
+                        * self.params.wave_1.multiplier.smoothed.next())
+                        * (1.0 + self.params.wave_1.offset.smoothed.next()),
                     self.params.wave_1.gain.smoothed.next(),
                     self.sample_rate,
                 );
                 let wave_2_sample = self.wave_2.sample(
-                    (self.params.base_frequency.smoothed.next() * self.params.wave_2.multiplier.smoothed.next()) * (1.0 + self.params.wave_2.offset.smoothed.next()),
+                    (self.params.base_frequency.smoothed.next()
+                        * self.params.wave_2.multiplier.smoothed.next())
+                        * (1.0 + self.params.wave_2.offset.smoothed.next()),
                     self.params.wave_2.gain.smoothed.next(),
                     self.sample_rate,
                 );
                 let wave_3_sample = self.wave_3.sample(
-                    (self.params.base_frequency.smoothed.next() * self.params.wave_3.multiplier.smoothed.next()) * (1.0 + self.params.wave_3.offset.smoothed.next()),
+                    (self.params.base_frequency.smoothed.next()
+                        * self.params.wave_3.multiplier.smoothed.next())
+                        * (1.0 + self.params.wave_3.offset.smoothed.next()),
                     self.params.wave_3.gain.smoothed.next(),
                     self.sample_rate,
                 );
@@ -208,6 +222,6 @@ impl Plugin for WaveCompositor {
 
 impl Vst3Plugin for WaveCompositor {
     const VST3_CLASS_ID: [u8; 16] = *b"WaveCompositor  ";
-    
+
     const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[Vst3SubCategory::Synth];
 }

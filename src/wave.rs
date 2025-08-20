@@ -17,18 +17,10 @@ impl Wave {
 
     pub fn sample(&mut self, frequency: f32, gain: f32, sample_rate: f32) -> f32 {
         let new_sample = match self.waveform {
-            Waveform::Sine => {
-                self.sample_sine()
-            },
-            Waveform::Saw => {
-                self.sample_saw()
-            },
-            Waveform::Square => {
-                self.sample_square()
-            },
-            Waveform::Triangle => {
-                self.sample_triangle()
-            }
+            Waveform::Sine => self.sample_sine(),
+            Waveform::Saw => self.sample_saw(),
+            Waveform::Square => self.sample_square(),
+            Waveform::Triangle => self.sample_triangle(),
         };
 
         self.increment_phase(frequency, sample_rate);
@@ -55,11 +47,7 @@ impl Wave {
     }
 
     fn sample_square(&mut self) -> f32 {
-        if self.phase >= 0.5 {
-            1.0
-        } else {
-            -1.0
-        }
+        if self.phase >= 0.5 { 1.0 } else { -1.0 }
     }
 
     fn sample_triangle(&mut self) -> f32 {
@@ -105,33 +93,33 @@ mod tests {
                 is_pass = false;
             };
         }
-        
+
         assert!(is_pass)
     }
 
     #[test]
-    fn test_sine(){
+    fn test_sine() {
         let expected = vec![0.0, 0.707, 1.0, 0.707, 0.0, -0.707, -1.0, -0.707];
 
         run_test(Waveform::Sine, expected)
     }
 
     #[test]
-    fn test_saw(){
+    fn test_saw() {
         let expected = vec![-1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75];
 
         run_test(Waveform::Saw, expected)
     }
 
     #[test]
-    fn test_square(){
+    fn test_square() {
         let expected = vec![-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0];
 
         run_test(Waveform::Square, expected)
     }
 
     #[test]
-    fn test_triangle(){
+    fn test_triangle() {
         let expected = vec![-1.0, -0.5, 0.0, 0.5, 1.0, 0.5, 0.0, -0.5];
 
         run_test(Waveform::Triangle, expected)
