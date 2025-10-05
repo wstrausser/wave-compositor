@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
 use nih_plug::prelude::*;
-use nih_plug_iced::IcedState;
 
-use crate::editor;
 use crate::wave::Wave;
 
 pub struct WaveCompositor {
@@ -16,9 +14,6 @@ pub struct WaveCompositor {
 
 #[derive(Params)]
 pub struct WaveCompositorParams {
-    #[persist = "editor-state"]
-    editor_state: Arc<IcedState>,
-
     #[id = "waveform"]
     waveform: EnumParam<Waveform>,
 
@@ -77,7 +72,6 @@ impl Default for WaveCompositor {
 impl Default for WaveCompositorParams {
     fn default() -> Self {
         Self {
-            editor_state: editor::default_state(),
             waveform: EnumParam::new("Waveform", Waveform::Sine),
             base_frequency: FloatParam::new(
                 "Base Frequency",
@@ -87,6 +81,7 @@ impl Default for WaveCompositorParams {
                     max: 520.0,
                 },
             )
+            .with_smoother(SmoothingStyle::Linear(3.0))
             .with_unit(" hz"),
             wave_1: WaveParams::default(),
             wave_2: WaveParams::default(),
@@ -104,18 +99,20 @@ impl Default for WaveParams {
                 FloatRange::Skewed {
                     min: 0.1,
                     max: 10.0,
-                    factor: 0.25,
+                    factor: 0.5,
                 },
             ),
             gain: FloatParam::new(
                 "Gain",
-                0.0,
-                FloatRange::Skewed {
-                    min: util::db_to_gain(-30.0),
-                    max: util::db_to_gain(10.0),
-                    factor: FloatRange::gain_skew_factor(-30.0, 10.0),
+                -100.0,
+                FloatRange::Linear {
+                    min: -100.0,
+                    max: 0.0,
                 },
-            ),
+            )
+            .with_smoother(SmoothingStyle::Linear(3.0))
+            .with_step_size(0.05)
+            .with_unit(" dB"),
             offset: FloatParam::new(
                 "Offset",
                 0.0,
@@ -160,10 +157,6 @@ impl Plugin for WaveCompositor {
         self.params.clone()
     }
 
-    fn editor(&mut self, async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
-        editor::create(self.params.clone(), self.params.editor_state.clone())
-    }
-
     fn initialize(
         &mut self,
         audio_io_layout: &AudioIOLayout,
@@ -190,29 +183,36 @@ impl Plugin for WaveCompositor {
         }
 
         for (_, channel_samples) in buffer.iter_samples().enumerate() {
-            for sample in channel_samples {
-                let wave_1_sample = self.wave_1.sample(
-                    (self.params.base_frequency.smoothed.next()
-                        * self.params.wave_1.multiplier.smoothed.next())
-                        * (1.0 + self.params.wave_1.offset.smoothed.next()),
-                    self.params.wave_1.gain.smoothed.next(),
-                    self.sample_rate,
-                );
-                let wave_2_sample = self.wave_2.sample(
-                    (self.params.base_frequency.smoothed.next()
-                        * self.params.wave_2.multiplier.smoothed.next())
-                        * (1.0 + self.params.wave_2.offset.smoothed.next()),
-                    self.params.wave_2.gain.smoothed.next(),
-                    self.sample_rate,
-                );
-                let wave_3_sample = self.wave_3.sample(
-                    (self.params.base_frequency.smoothed.next()
-                        * self.params.wave_3.multiplier.smoothed.next())
-                        * (1.0 + self.params.wave_3.offset.smoothed.next()),
-                    self.params.wave_3.gain.smoothed.next(),
-                    self.sample_rate,
-                );
+            let base_frequency = self.params.base_frequency.smoothed.next();
 
+            let wave_1_frequency = (base_frequency
+                * self.params.wave_1.multiplier.smoothed.next())
+                * (1.0 + self.params.wave_1.offset.smoothed.next());
+            let wave_1_sample = self.wave_1.sample(
+                wave_1_frequency,
+                util::db_to_gain_fast(self.params.wave_1.gain.smoothed.next()),
+                self.sample_rate,
+            );
+
+            let wave_2_frequency = (base_frequency
+                * self.params.wave_2.multiplier.smoothed.next())
+                * (1.0 + self.params.wave_2.offset.smoothed.next());
+            let wave_2_sample = self.wave_2.sample(
+                wave_2_frequency,
+                util::db_to_gain_fast(self.params.wave_2.gain.smoothed.next()),
+                self.sample_rate,
+            );
+
+            let wave_3_frequency = (base_frequency
+                * self.params.wave_3.multiplier.smoothed.next())
+                * (1.0 + self.params.wave_3.offset.smoothed.next());
+            let wave_3_sample = self.wave_3.sample(
+                wave_3_frequency,
+                util::db_to_gain_fast(self.params.wave_3.gain.smoothed.next()),
+                self.sample_rate,
+            );
+
+            for sample in channel_samples {
                 *sample = wave_1_sample + wave_2_sample + wave_3_sample;
             }
         }

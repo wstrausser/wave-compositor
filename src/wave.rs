@@ -25,7 +25,13 @@ impl Wave {
 
         self.increment_phase(frequency, sample_rate);
 
-        new_sample * gain
+        let scaled_sample = new_sample * gain;
+
+        if gain > 0.1 {
+            println!("frequency: {}, gain: {}, sample_rate: {}, sample: {}", frequency, gain, sample_rate, scaled_sample);
+        }
+
+        scaled_sample
     }
 
     fn increment_phase(&mut self, frequency: f32, sample_rate: f32) {
